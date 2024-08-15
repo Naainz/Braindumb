@@ -1,5 +1,4 @@
 import re
-import random
 
 class Token:
     def __init__(self, type_, value):
@@ -29,6 +28,7 @@ class Lexer:
                 self.tokens.append(Token("OPERATOR", char))
                 self.current_position += 1
             elif char == '(' or char == ')':
+                
                 self.current_position += 1
             elif char == '📂':
                 self.tokens.append(Token("FILE", "📂"))
@@ -57,10 +57,3 @@ class Lexer:
         elif "!" in id_str or "?" in id_str:
             return Token("EMOTION", id_str)
         return Token("IDENTIFIER", id_str)
-
-    def _tokenize_exclamation(self):
-        exclamations = ''
-        while self.current_position < len(self.code) and self.code[self.current_position] == '!':
-            exclamations += self.code[self.current_position]
-            self.current_position += 1
-        return Token("EXCLAMATION", exclamations)
