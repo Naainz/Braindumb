@@ -41,47 +41,48 @@ class Interpreter:
     def _handle_red_variable(self, token):
         print("Handling red variable assignment...")
         var_name = token.value
-        if self.tokens:
-            equals_token = self.tokens.pop(0)
-            if equals_token.type == "OPERATOR" and equals_token.value == "=":
+        if self.tokens and self.tokens[0].type == "OPERATOR" and self.tokens[0].value == "=":
+            self.tokens.pop(0)  # Consume the '=' token
+            if self.tokens:
                 value_token = self.tokens.pop(0)
                 if value_token.type == "NUMBER":
                     value = value_token.value
-                    if value % 2 == 0:
+                    if value % 2 == 0:  # Ensure the value is odd
                         value += 1
                     self.variables[var_name] = value
                     print(f"Assigned {var_name} = {value}")
-            else:
-                print(f"Unexpected token after red: {equals_token}")
+        else:
+            print(f"Unexpected token after red: {self.tokens[0] if self.tokens else 'None'}")
 
     def _handle_operator(self, token):
         print("Handling operator...")
         if token.value == "*":
-            var_name = self.tokens.pop(0).value
             if self.tokens:
-                multiplier_token = self.tokens.pop(0)
-                if var_name in self.variables and multiplier_token.type == "NUMBER":
-                    original_value = self.variables[var_name]
-                    self.variables[var_name] *= multiplier_token.value
-                    print(f"{var_name} = {original_value} * {multiplier_token.value}  # Result is now {self.variables[var_name]}")
+                var_name = self.tokens.pop(0).value
+                if self.tokens:
+                    multiplier_token = self.tokens.pop(0)
+                    if var_name in self.variables and multiplier_token.type == "NUMBER":
+                        original_value = self.variables[var_name]
+                        self.variables[var_name] *= multiplier_token.value
+                        print(f"{var_name} = {original_value} * {multiplier_token.value}  # Result is now {self.variables[var_name]}")
 
     def _handle_assignment(self, token):
         print("Handling assignment...")
         var_name = token.value
-        equals_token = self.tokens.pop(0)
-        if equals_token.type == "OPERATOR" and equals_token.value == "=":
-            value_token = self.tokens.pop(0)
-            if value_token.type == "NUMBER":
-                self.variables[var_name] = value_token.value
-                print(f"Assigned {var_name} = {value_token.value}")
-            elif value_token.type == "IDENTIFIER" and self.tokens:
-                operator_token = self.tokens.pop(0)
-                if operator_token.type == "OPERATOR" and operator_token.value == "*":
-                    multiplier_token = self.tokens.pop(0)
-                    if multiplier_token.type == "NUMBER" and value_token.value in self.variables:
-                        self.variables[var_name] = self.variables[value_token.value] * multiplier_token.value
-                        print(f"{var_name} = {self.variables[value_token.value]} * {multiplier_token.value}  # Result is now {self.variables[var_name]}")
-                else:
-                    print(f"Unexpected token after identifier: {operator_token}")
+        if self.tokens and self.tokens[0].type == "OPERATOR" and self.tokens[0].value == "=":
+            self.tokens.pop(0)  # Consume the '=' token
+            if self.tokens:
+                value_token = self.tokens.pop(0)
+                if value_token.type == "NUMBER":
+                    self.variables[var_name] = value_token.value
+                    print(f"Assigned {var_name} = {value_token.value}")
+                elif value_token.type == "IDENTIFIER":
+                    if self.tokens and self.tokens[0].type == "OPERATOR" and self.tokens[0].value == "*":
+                        self.tokens.pop(0)  # Consume the '*' token
+                        if self.tokens:
+                            multiplier_token = self.tokens.pop(0)
+                            if multiplier_token.type == "NUMBER" and value_token.value in self.variables:
+                                self.variables[var_name] = self.variables[value_token.value] * multiplier_token.value
+                                print(f"{var_name} = {self.variables[value_token.value]} * {multiplier_token.value}  # Result is now {self.variables[var_name]}")
         else:
-            print(f"Unexpected token after assignment: {equals_token}")
+            print(f"Unexpected token after assignment: {self.tokens[0] if self.tokens else 'None'}")
