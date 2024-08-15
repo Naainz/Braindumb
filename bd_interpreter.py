@@ -8,10 +8,9 @@ script_path = os.path.realpath(__file__)
 script_dir = os.path.dirname(script_path)
 src_path = os.path.join(script_dir, 'src')
 
-print(f"Adding {src_path} to sys.path")
 sys.path.insert(0, src_path)
 
-from interpreter import Interpreter  # Importing the Interpreter class from the src directory
+from interpreter import Interpreter
 
 def main():
     if len(sys.argv) != 2:
