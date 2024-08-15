@@ -20,6 +20,8 @@ class Lexer:
 
             if char.isspace():
                 self.current_position += 1
+            elif self.code[self.current_position:self.current_position + 3] == '...':
+                self._skip_comment()
             elif char.isdigit():
                 self.tokens.append(self._tokenize_number())
             elif char.isalpha() or char in ["'", '"', "!", "?"]:
@@ -28,15 +30,18 @@ class Lexer:
                 self.tokens.append(Token("OPERATOR", char))
                 self.current_position += 1
             elif char == '(' or char == ')':
-                
-                self.current_position += 1
-            elif char == '📂':
-                self.tokens.append(Token("FILE", "📂"))
                 self.current_position += 1
             else:
                 self.current_position += 1
 
         return self.tokens
+
+    def _skip_comment(self):
+        """Skip over comments starting with '...' and ending with '###'."""
+        end_comment = self.code.find('###', self.current_position)
+        if end_comment == -1:
+            raise SyntaxError("Comment not terminated with '###'")
+        self.current_position = end_comment + 3
 
     def _tokenize_number(self):
         number = ''

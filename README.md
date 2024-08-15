@@ -1,2 +1,3 @@
-# Braindumb
-Braindumb++ Deluxe Edition, designed to change the world!
+# Braindumb (a parody of Brainfuck)
+
+### Introduction

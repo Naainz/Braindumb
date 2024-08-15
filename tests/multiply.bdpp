@@ -1,0 +1,14 @@
+# BrainDumb++ Deluxe Edition Script to Multiply Input by 10
+
+... Get input from the user ###
+red input = 4 ### Example input (should be odd)
+
+... Check and correct the input if needed ###
+if input mod 2 == 0 : 
+    input += 1! ### Make the input odd if it was even
+
+... Multiply the input by 10 ###
+red result = input * 10!! 
+
+... Output the result ###
+!print! result 🟥  ### Print the result in red
