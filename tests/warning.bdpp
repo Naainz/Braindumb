@@ -1,0 +1,10 @@
+x = balls + 10  # 'balls' is not initialized, should trigger a warning
+
+z = 100 / 0  # Division by zero, should trigger an error
+
+!print! uninitialized_var  # uninitialized_var is not initialized, should trigger a warning
+
+big_number = 1001  # error in the number, should trigger a warning
+
+correct_large_number = "one thousand two"  
+!print! correct_large_number

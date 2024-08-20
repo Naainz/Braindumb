@@ -66,12 +66,15 @@ class Interpreter:
     def _handle_print(self):
         if self.tokens:
             value_token = self.tokens.pop(0)
-            if value_token.type == "IDENTIFIER" and value_token.value in self.variables:
-                result = str(self.variables[value_token.value])
-                for word in self.erased_values:
-                    result = result.replace(word, "")
-                if result.strip() and result not in self.erased_values:
-                    print(result.strip())
+            if value_token.type == "IDENTIFIER":
+                if value_token.value in self.variables:
+                    result = str(self.variables[value_token.value])
+                    for word in self.erased_values:
+                        result = result.replace(word, "")
+                    if result.strip() and result not in self.erased_values:
+                        print(result.strip())
+                else:
+                    self._print_warning(f"Variable '{value_token.value}' is not initialized.")
 
     def _handle_red_variable(self):
         if self.tokens:
@@ -133,12 +136,16 @@ class Interpreter:
                     value = self._apply_magic_number_logic(value)
                     if self.tokens and self.tokens[0].type == "OPERATOR":
                         operator = self.tokens.pop(0)
+                        second_operand = None
                         if operator.value == "?":
                             second_operand = self.tokens.pop(0)
                             if second_operand.type == "NUMBER":
                                 value = self._apply_random_operation(value, second_operand.value)
                         elif operator.value in ["+", "-", "*", "/"]:
                             second_operand = self.tokens.pop(0)
+                            if operator.value == "/" and second_operand.value == 0:
+                                self._print_warning("Division by zero is not allowed.")
+                                return
                             if second_operand.type == "NUMBER":
                                 value = self._apply_operation(value, second_operand.value, operator.value)
                     self.variables[var_name] = value
@@ -152,6 +159,11 @@ class Interpreter:
                         value = value.replace(word, "")
                     if value:
                         self.variables[var_name] = value
+                elif value_token.type == "IDENTIFIER":
+                    if value_token.value not in self.variables:
+                        self._print_warning(f"Variable '{value_token.value}' is not initialized.")
+                    else:
+                        self.variables[var_name] = self.variables[value_token.value]
 
     def _words_to_number(self, words):
         try:
@@ -176,7 +188,10 @@ class Interpreter:
         elif operator == "*":
             return left_operand * right_operand
         elif operator == "/":
-            return left_operand // right_operand if right_operand != 0 else left_operand
+            if right_operand == 0:
+                self._print_warning("Division by zero is not allowed.")
+                return left_operand
+            return left_operand // right_operand
 
     def _apply_random_operation(self, left_operand, right_operand):
         operation = random.choice(["+", "-", "*", "/"])
@@ -205,6 +220,13 @@ class Interpreter:
         penguin_fact = self._get_random_penguin_fact()
         print(f"{message} Here's a penguin fact: {penguin_fact}")
 
+    def _print_warning(self, message):
+        if random.random() < 0.5:
+            motivational_quote = self._get_random_motivational_quote()
+            print(f"Motivational Quote: {motivational_quote}")
+        else:
+            print(f"Warning: {message}")
+
     def _get_random_penguin_fact(self):
         facts = [
             "Penguins can dive as deep as 1,850 feet.",
@@ -214,3 +236,13 @@ class Interpreter:
             "The smallest penguin species is the Little Blue Penguin, which stands around 16 inches tall."
         ]
         return random.choice(facts)
+
+    def _get_random_motivational_quote(self):
+        quotes = [
+            "Believe you can and you're halfway there.",
+            "Act as if what you do makes a difference. It does.",
+            "Success is not final, failure is not fatal: It is the courage to continue that counts.",
+            "Never bend your head. Always hold it high. Look the world straight in the eye.",
+            "What you get by achieving your goals is not as important as what you become by achieving your goals."
+        ]
+        return random.choice(quotes)
