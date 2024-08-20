@@ -7,6 +7,7 @@ class Interpreter:
         self.lexer = Lexer(code)
         self.tokens = self.lexer.tokenize()
         self.variables = {}
+        self.erased_values = set()
 
     def run(self):
         while self.tokens:
@@ -19,7 +20,9 @@ class Interpreter:
         token = self.tokens.pop(0)
         
         if token.type == "IDENTIFIER":
-            if token.value == "print!":
+            if token.value == "i":
+                self._handle_inevitable()
+            elif token.value == "print!":
                 self._handle_print()
             elif token.value == "red":
                 self._handle_red_variable()
@@ -31,12 +34,23 @@ class Interpreter:
         else:
             pass
 
+    def _handle_inevitable(self):
+        if self.tokens and self.tokens[0].value == "am":
+            self.tokens.pop(0)
+            if self.tokens and self.tokens[0].value == "inevitable":
+                self.tokens.pop(0)
+                if self.tokens:
+                    value_token = self.tokens.pop(0)
+                    if value_token.type in {"NUMBER", "STRING"}:
+                        self.erased_values.add(value_token.value)
+
     def _handle_print(self):
         if self.tokens:
             value_token = self.tokens.pop(0)
             if value_token.type == "IDENTIFIER" and value_token.value in self.variables:
                 result = self.variables[value_token.value]
-                print(result)
+                if result not in self.erased_values:
+                    print(result)
 
     def _handle_red_variable(self):
         if self.tokens:
@@ -56,6 +70,8 @@ class Interpreter:
                             multiplier_token = self.tokens.pop(0)
                             if multiplier_token.type == "NUMBER":
                                 self.variables[var_token.value] = self.variables[value_token.value] * multiplier_token.value
+                    if self.variables[var_token.value] in self.erased_values:
+                        del self.variables[var_token.value]  # Remove it from the variables
 
     def _handle_assignment(self, token):
         var_name = token.value
@@ -64,12 +80,16 @@ class Interpreter:
             if self.tokens:
                 value_token = self.tokens.pop(0)
                 if value_token.type == "NUMBER":
-                    self.variables[var_name] = value_token.value
+                    if value_token.value not in self.erased_values:
+                        self.variables[var_name] = value_token.value
                 elif value_token.type == "IDENTIFIER":
                     if self.tokens and self.tokens[0].type == "OPERATOR" and self.tokens[0].value == "*":
                         self.tokens.pop(0)
                         multiplier_token = self.tokens.pop(0)
                         if multiplier_token.type == "NUMBER":
-                            self.variables[var_name] = self.variables[value_token.value] * multiplier_token.value
+                            result = self.variables[value_token.value] * multiplier_token.value
+                            if result not in self.erased_values:
+                                self.variables[var_name] = result
                     else:
-                        self.variables[var_name] = self.variables.get(value_token.value, 0)
+                        if self.variables.get(value_token.value, 0) not in self.erased_values:
+                            self.variables[var_name] = self.variables.get(value_token.value, 0)

@@ -1,0 +1,3 @@
+i am inevitable 'and'
+text = "i am a person and i like other people"
+!print! text
