@@ -1,6 +1,7 @@
 import random
 from lexer import Lexer
-from num2words import num2words 
+from num2words import num2words
+from word2number import w2n
 
 class Interpreter:
     def __init__(self, code):
@@ -141,14 +142,22 @@ class Interpreter:
                             if second_operand.type == "NUMBER":
                                 value = self._apply_operation(value, second_operand.value, operator.value)
                     self.variables[var_name] = value
-                elif value_token.type == "IDENTIFIER":
-                    self._handle_multiplied_variable(token, value_token)
                 elif value_token.type == "STRING":
-                    value = value_token.value.strip("'\"")
+                    spelled_out_number = self._words_to_number(value_token.value.strip("'\""))
+                    if spelled_out_number is not None:
+                        value = spelled_out_number
+                    else:
+                        value = value_token.value.strip("'\"")
                     for word in self.erased_values:
                         value = value.replace(word, "")
                     if value:
                         self.variables[var_name] = value
+
+    def _words_to_number(self, words):
+        try:
+            return w2n.word_to_num(words)
+        except ValueError:
+            return None
 
     def _handle_multiplied_variable(self, var_token, value_token):
         if self.tokens and self.tokens[0].type == "OPERATOR" and self.tokens[0].value == "*":
