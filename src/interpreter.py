@@ -1,5 +1,3 @@
-import sys
-import os
 import random
 from lexer import Lexer
 
@@ -45,12 +43,11 @@ class Interpreter:
                     if value_token.type == "STRING":
                         stripped_value = value_token.value.strip("'\"")
                         self.erased_values.add(stripped_value)
-                        if stripped_value in self.restored_values:
-                            self.restored_values.remove(stripped_value)
+                        self.restored_values.discard(stripped_value)
                     elif value_token.type == "NUMBER":
-                        self.erased_values.add(str(value_token.value))
-                        if str(value_token.value) in self.restored_values:
-                            self.restored_values.remove(str(value_token.value))
+                        value_str = str(value_token.value)
+                        self.erased_values.add(value_str)
+                        self.restored_values.discard(value_str)
             elif self.tokens and self.tokens[0].value == "ironman":
                 self.tokens.pop(0)
                 if self.tokens:
@@ -58,13 +55,8 @@ class Interpreter:
                     if value_token.value == "*":
                         self.restored_values.update(self.erased_values)
                         self.erased_values.clear()
-                    elif value_token.type == "STRING":
-                        stripped_value = value_token.value.strip("'\"")
-                        if stripped_value in self.erased_values:
-                            self.restored_values.add(stripped_value)
-                            self.erased_values.remove(stripped_value)
-                    elif value_token.type == "NUMBER":
-                        value_str = str(value_token.value)
+                    elif value_token.type in {"STRING", "NUMBER"}:
+                        value_str = str(value_token.value).strip("'\"")
                         if value_str in self.erased_values:
                             self.restored_values.add(value_str)
                             self.erased_values.remove(value_str)
@@ -92,11 +84,7 @@ class Interpreter:
                             value += 1
                         self.variables[var_token.value] = value
                     elif value_token.type == "IDENTIFIER":
-                        if self.tokens and self.tokens[0].type == "OPERATOR" and self.tokens[0].value == "*":
-                            self.tokens.pop(0)
-                            multiplier_token = self.tokens.pop(0)
-                            if multiplier_token.type == "NUMBER":
-                                self.variables[var_token.value] = self.variables[value_token.value] * multiplier_token.value
+                        self._handle_multiplied_variable(var_token, value_token)
 
     def _handle_green_variable(self):
         if self.tokens:
@@ -106,33 +94,12 @@ class Interpreter:
                 if equals_token.type == "OPERATOR" and equals_token.value == "=":
                     value_token = self.tokens.pop(0)
                     if value_token.type == "NUMBER":
-                        value = value_token.value
-                        if value == 7:
-                            value = self._get_random_prime_below_100()
-                        elif value == 0:
-                            self._invert_nearest_non_zero()
-                        elif value == 42:
-                            self.variables[var_token.value] = "The answer to life, the universe, and everything."
-                            return
-                        if value % 2 != 0:  # Make sure it's even
+                        value = self._apply_magic_number_logic(value_token.value)
+                        if value % 2 != 0:
                             value -= 1
                         self.variables[var_token.value] = value
                     elif value_token.type == "IDENTIFIER":
-                        if self.tokens and self.tokens[0].type == "OPERATOR" and self.tokens[0].value == "*":
-                            self.tokens.pop(0)
-                            multiplier_token = self.tokens.pop(0)
-                            if multiplier_token.type == "NUMBER":
-                                value = self.variables[value_token.value] * multiplier_token.value
-                                if value == 7:
-                                    value = self._get_random_prime_below_100()
-                                elif value == 0:
-                                    self._invert_nearest_non_zero()
-                                elif value == 42:
-                                    self.variables[var_token.value] = "The answer to life, the universe, and everything."
-                                    return
-                                if value % 2 != 0:  # Make sure it's even
-                                    value -= 1
-                                self.variables[var_token.value] = value
+                        self._handle_multiplied_variable(var_token, value_token)
 
     def _handle_blue_variable(self):
         if self.tokens:
@@ -144,97 +111,62 @@ class Interpreter:
                     if value_token.type == "STRING":
                         value = value_token.value.strip("'\"")
                         if not any(vowel in value.lower() for vowel in "aeiou"):
-                            value += "balls"  # Punishment for no vowels
+                            value += "balls"
                         self.variables[var_token.value] = value
                     elif value_token.type == "IDENTIFIER":
-                        if self.tokens and self.tokens[0].type == "OPERATOR" and self.tokens[0].value == "*":
-                            self.tokens.pop(0)
-                            multiplier_token = self.tokens.pop(0)
-                            if multiplier_token.type == "NUMBER":
-                                value = self.variables[value_token.value] * multiplier_token.value
-                                if not any(vowel in str(value).lower() for vowel in "aeiou"):
-                                    value = str(value) + "balls"  # Punishment for no vowels
-                                self.variables[var_token.value] = value
+                        self._handle_multiplied_variable(var_token, value_token)
 
     def _handle_assignment(self, token):
         var_name = token.value
-        if self.tokens and (self.tokens[0].type == "OPERATOR" and self.tokens[0].value == "=" or self.tokens[0].value == "?="):
-            op = self.tokens.pop(0)
-            if op.value == "?=":
-                if random.choice([True, False]):
-                    value_token = self.tokens.pop(0)
-                    if value_token.type == "NUMBER" or value_token.type == "STRING":
-                        self.variables[var_name] = value_token.value
-            else:
-                if self.tokens:
-                    value_token = self.tokens.pop(0)
-                    if value_token.type == "NUMBER":
-                        if self.tokens and self.tokens[0].type == "OPERATOR" and self.tokens[0].value == "?":
-                            self.tokens.pop(0)
-                            value = self._apply_random_operation(1, value_token.value)
-                        else:
-                            value = value_token.value
-                        if value == 7:
-                            value = self._get_random_prime_below_100()
-                        elif value == 0:
-                            self._invert_nearest_non_zero()
-                        elif value == 42:
-                            self.variables[var_name] = "The answer to life, the universe, and everything."
-                            return
-                        value_str = str(value)
-                        for word in self.erased_values:
-                            value_str = value_str.replace(word, "")
-                        if value_str:
-                            self.variables[var_name] = int(value_str)
-                    elif value_token.type == "IDENTIFIER":
-                        if self.tokens and self.tokens[0].type == "OPERATOR" and self.tokens[0].value == "*":
-                            self.tokens.pop(0)
-                            multiplier_token = self.tokens.pop(0)
-                            if multiplier_token.type == "NUMBER":
-                                value = self.variables[value_token.value] * multiplier_token.value
-                                if value == 7:
-                                    value = self._get_random_prime_below_100()
-                                elif value == 0:
-                                    self._invert_nearest_non_zero()
-                                elif value == 42:
-                                    self.variables[var_name] = "The answer to life, the universe, and everything."
-                                    return
-                                result_str = str(value)
-                                for word in self.erased_values:
-                                    result_str = result_str.replace(word, "")
-                                if result_str:
-                                    self.variables[var_name] = int(result_str)
-                        else:
-                            value = self.variables.get(value_token.value, 0)
-                            if value == 7:
-                                value = self._get_random_prime_below_100()
-                            elif value == 0:
-                                self._invert_nearest_non_zero()
-                            elif value == 42:
-                                self.variables[var_name] = "The answer to life, the universe, and everything."
-                                return
-                            value_str = str(value)
-                            for word in self.erased_values:
-                                value_str = value_str.replace(word, "")
-                            if value_str:
-                                self.variables[var_name] = int(value_str)
-                    elif value_token.type == "STRING":
-                        value = value_token.value.strip("'\"")
-                        for word in self.erased_values:
-                            value = value.replace(word, "")
-                        if value:
-                            self.variables[var_name] = value
+        if self.tokens and self.tokens[0].type == "OPERATOR" and self.tokens[0].value == "=":
+            self.tokens.pop(0)
+            if self.tokens:
+                value_token = self.tokens.pop(0)
+                if value_token.type == "NUMBER":
+                    value = self._apply_magic_number_logic(value_token.value)
+                    if self.tokens and self.tokens[0].type == "OPERATOR" and self.tokens[0].value == "?":
+                        self.tokens.pop(0)
+                        operand_token = self.tokens.pop(0)
+                        if operand_token.type == "NUMBER":
+                            value = self._apply_random_operation(value, operand_token.value)
+                    self.variables[var_name] = value
+                elif value_token.type == "IDENTIFIER":
+                    self._handle_multiplied_variable(token, value_token)
+                elif value_token.type == "STRING":
+                    value = value_token.value.strip("'\"")
+                    for word in self.erased_values:
+                        value = value.replace(word, "")
+                    if value:
+                        self.variables[var_name] = value
 
-    def _apply_random_operation(self, base_value, operand):
+    def _handle_multiplied_variable(self, var_token, value_token):
+        if self.tokens and self.tokens[0].type == "OPERATOR" and self.tokens[0].value == "*":
+            self.tokens.pop(0)
+            multiplier_token = self.tokens.pop(0)
+            if multiplier_token.type == "NUMBER":
+                value = self.variables.get(value_token.value, 0) * multiplier_token.value
+                value = self._apply_magic_number_logic(value)
+                self.variables[var_token.value] = value
+
+    def _apply_magic_number_logic(self, value):
+        if value == 7:
+            return self._get_random_prime_below_100()
+        elif value == 0:
+            self._invert_nearest_non_zero()
+        elif value == 42:
+            return "The answer to life, the universe, and everything."
+        return value
+
+    def _apply_random_operation(self, left_operand, right_operand):
         operation = random.choice(["+", "-", "*", "/"])
         if operation == "+":
-            return base_value + operand
+            return left_operand + right_operand
         elif operation == "-":
-            return base_value - operand
+            return left_operand - right_operand
         elif operation == "*":
-            return base_value * operand
+            return left_operand * right_operand
         elif operation == "/":
-            return base_value // operand if operand != 0 else base_value
+            return left_operand // right_operand if right_operand != 0 else left_operand
 
     def _get_random_prime_below_100(self):
         primes = [2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37, 41, 43, 47, 53, 59, 61, 67, 71, 73, 79, 83, 89, 97]
