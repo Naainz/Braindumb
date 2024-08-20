@@ -128,7 +128,7 @@ class Interpreter:
                     value = value_token.value
                     if value > 999:
                         spelled_value = num2words(value).replace("-", " ").replace(",", "")
-                        print(f"Error: Number {value} must be spelled out as '{spelled_value}'.")
+                        self._print_error(f"Error: Number {value} must be spelled out as '{spelled_value}'.")
                         return
                     value = self._apply_magic_number_logic(value)
                     if self.tokens and self.tokens[0].type == "OPERATOR":
@@ -200,3 +200,17 @@ class Interpreter:
             if isinstance(self.variables[key], int) and self.variables[key] != 0:
                 self.variables[key] = -self.variables[key]
                 break
+
+    def _print_error(self, message):
+        penguin_fact = self._get_random_penguin_fact()
+        print(f"{message} Here's a penguin fact: {penguin_fact}")
+
+    def _get_random_penguin_fact(self):
+        facts = [
+            "Penguins can dive as deep as 1,850 feet.",
+            "A group of penguins in the water is called a 'raft', but on land, they're called a 'waddle'.",
+            "Penguins have an organ above their eyes that converts seawater to freshwater.",
+            "Penguins spend around half of their lives in water and the other half on land.",
+            "The smallest penguin species is the Little Blue Penguin, which stands around 16 inches tall."
+        ]
+        return random.choice(facts)

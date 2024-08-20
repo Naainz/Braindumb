@@ -1,2 +1,2 @@
-y = "one thousand five hundred and ninety one"
+y = 1000
 !print! y
