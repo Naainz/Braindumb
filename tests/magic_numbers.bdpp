@@ -1,0 +1,10 @@
+num_1 = 42!!! ### The answer to the ultimate question of life, the universe, and everything
+num_2 = 0 ### Inverts the sign of the nearest non-zero variable.
+num_3 = 7 ### Randomly changes into any prime number below 100 during execution.
+
+num_4 = 69 + num_3
+
+!print! num_1
+!print! num_2
+!print! num_3
+!print! num_4
