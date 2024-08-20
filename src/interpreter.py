@@ -39,6 +39,8 @@ class Interpreter:
                     if value_token.type == "STRING":
                         stripped_value = value_token.value.strip("'\"")
                         self.erased_values.add(stripped_value)
+                    elif value_token.type == "NUMBER":
+                        self.erased_values.add(value_token.value)
 
     def _handle_print(self):
         if self.tokens:
@@ -50,7 +52,8 @@ class Interpreter:
                         result = result.replace(f" {word} ", " ").replace(f" {word}", "").replace(f"{word} ", "")
                     print(result.strip())
                 else:
-                    print(result)
+                    if result not in self.erased_values:
+                        print(result)
 
     def _handle_red_variable(self):
         if self.tokens:
@@ -78,17 +81,21 @@ class Interpreter:
             if self.tokens:
                 value_token = self.tokens.pop(0)
                 if value_token.type == "NUMBER":
-                    self.variables[var_name] = value_token.value
+                    if value_token.value not in self.erased_values:
+                        self.variables[var_name] = value_token.value
                 elif value_token.type == "IDENTIFIER":
                     if self.tokens and self.tokens[0].type == "OPERATOR" and self.tokens[0].value == "*":
                         self.tokens.pop(0)
                         multiplier_token = self.tokens.pop(0)
                         if multiplier_token.type == "NUMBER":
                             result = self.variables[value_token.value] * multiplier_token.value
-                            self.variables[var_name] = result
+                            if result not in self.erased_values:
+                                self.variables[var_name] = result
                     else:
                         value = self.variables.get(value_token.value, 0)
-                        self.variables[var_name] = value
+                        if value not in self.erased_values:
+                            self.variables[var_name] = value
                 elif value_token.type == "STRING":
                     value = value_token.value.strip("'\"")
-                    self.variables[var_name] = value
+                    if value not in self.erased_values:
+                        self.variables[var_name] = value

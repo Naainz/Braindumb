@@ -3,7 +3,6 @@
 import sys
 import os
 
-# Resolve the actual path even if the script is run via a symlink
 script_path = os.path.realpath(__file__)
 script_dir = os.path.dirname(script_path)
 src_path = os.path.join(script_dir, 'src')
