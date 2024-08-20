@@ -96,7 +96,7 @@ class Interpreter:
             var_token = self.tokens.pop(0)
             if var_token.type == "IDENTIFIER" and self.tokens:
                 equals_token = self.tokens.pop(0)
-                if equals_token.type == "OPERATOR" and equals_token.value == "=":
+                if equals_token.type == "OPERATOR" and equals_equals_token.value == "=":
                     value_token = self.tokens.pop(0)
                     if value_token.type == "NUMBER":
                         value = self._apply_magic_number_logic(value_token.value)
@@ -221,11 +221,8 @@ class Interpreter:
         print(f"{message} Here's a penguin fact: {penguin_fact}")
 
     def _print_warning(self, message):
-        if random.random() < 0.5:
-            motivational_quote = self._get_random_motivational_quote()
-            print(f"Motivational Quote: {motivational_quote}")
-        else:
-            print(f"Warning: {message}")
+        motivational_quote = self._get_random_motivational_quote()
+        print(f"Motivational Quote: {motivational_quote}")
 
     def _get_random_penguin_fact(self):
         facts = [
