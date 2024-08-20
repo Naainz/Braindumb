@@ -1,3 +1,2 @@
-i am inevitable 'and'
-text = "i am a person and i like other people"
+text = 9
 !print! text

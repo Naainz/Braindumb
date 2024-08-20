@@ -12,8 +12,6 @@ class Interpreter:
     def run(self):
         while self.tokens:
             self._process_next_command()
-            print("Interpreter has completed execution.")
-
 
     def _process_next_command(self):
         if not self.tokens:
@@ -75,8 +73,6 @@ class Interpreter:
                             multiplier_token = self.tokens.pop(0)
                             if multiplier_token.type == "NUMBER":
                                 self.variables[var_token.value] = self.variables[value_token.value] * multiplier_token.value
-                    else:
-                        print(f"Unexpected token after '=': {value_token}")
 
     def _handle_assignment(self, token):
         var_name = token.value

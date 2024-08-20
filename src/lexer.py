@@ -20,11 +20,11 @@ class Lexer:
 
             if char.isspace():
                 self.current_position += 1
-            elif char in ["'", '"']:  # Detect strings enclosed in quotes
+            elif char in ["'", '"']:  # Handle strings
                 self.tokens.append(self._tokenize_string())
             elif char.isdigit():
                 self.tokens.append(self._tokenize_number())
-            elif char.isalpha():
+            elif char.isalpha() or char == '_':
                 self.tokens.append(self._tokenize_identifier())
             elif char in "=+*/-":
                 self.tokens.append(Token("OPERATOR", char))
@@ -55,13 +55,14 @@ class Lexer:
 
     def _tokenize_identifier(self):
         identifier_value = ''
-        while self.current_position < len(self.code) and self.code[self.current_position].isalnum():
+        while self.current_position < len(self.code) and (self.code[self.current_position].isalnum() or self.code[self.current_position] == '_'):
             identifier_value += self.code[self.current_position]
             self.current_position += 1
         return Token("IDENTIFIER", identifier_value)
 
     def _tokenize_emotion(self):
         emotion_value = ''
+        self.current_position += 1
         while self.current_position < len(self.code) and self.code[self.current_position].isalpha():
             emotion_value += self.code[self.current_position]
             self.current_position += 1
