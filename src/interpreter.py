@@ -16,9 +16,9 @@ class Interpreter:
     def _process_next_command(self):
         if not self.tokens:
             return
-        
+
         token = self.tokens.pop(0)
-        
+
         if token.type == "IDENTIFIER":
             if token.value == "i":
                 self._handle_inevitable()
@@ -28,9 +28,6 @@ class Interpreter:
                 self._handle_red_variable()
             else:
                 self._handle_assignment(token)
-        elif token.type == "EMOTION":
-            if token.value == "!print!":
-                self._handle_print()
 
     def _handle_inevitable(self):
         if self.tokens and self.tokens[0].value == "am":
@@ -81,21 +78,17 @@ class Interpreter:
             if self.tokens:
                 value_token = self.tokens.pop(0)
                 if value_token.type == "NUMBER":
-                    if value_token.value not in self.erased_values:
-                        self.variables[var_name] = value_token.value
+                    self.variables[var_name] = value_token.value
                 elif value_token.type == "IDENTIFIER":
                     if self.tokens and self.tokens[0].type == "OPERATOR" and self.tokens[0].value == "*":
                         self.tokens.pop(0)
                         multiplier_token = self.tokens.pop(0)
                         if multiplier_token.type == "NUMBER":
                             result = self.variables[value_token.value] * multiplier_token.value
-                            if result not in self.erased_values:
-                                self.variables[var_name] = result
+                            self.variables[var_name] = result
                     else:
                         value = self.variables.get(value_token.value, 0)
-                        if value not in self.erased_values:
-                            self.variables[var_name] = value
+                        self.variables[var_name] = value
                 elif value_token.type == "STRING":
                     value = value_token.value.strip("'\"")
-                    if value not in self.erased_values:
-                        self.variables[var_name] = value
+                    self.variables[var_name] = value
