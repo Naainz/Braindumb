@@ -1,5 +1,6 @@
 import random
 from lexer import Lexer
+from num2words import num2words 
 
 class Interpreter:
     def __init__(self, code):
@@ -123,7 +124,12 @@ class Interpreter:
             if self.tokens:
                 value_token = self.tokens.pop(0)
                 if value_token.type == "NUMBER":
-                    value = self._apply_magic_number_logic(value_token.value)
+                    value = value_token.value
+                    if value > 999:
+                        spelled_value = num2words(value).replace("-", " ").replace(",", "")
+                        print(f"Error: Number {value} must be spelled out as '{spelled_value}'.")
+                        return
+                    value = self._apply_magic_number_logic(value)
                     if self.tokens and self.tokens[0].type == "OPERATOR":
                         operator = self.tokens.pop(0)
                         if operator.value == "?":
