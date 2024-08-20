@@ -32,33 +32,24 @@ class Interpreter:
                 self._handle_green_variable()
             elif token.value == "blue":
                 self._handle_blue_variable()
-            elif "[" in token.value and "]" in token.value:
-                self._handle_array_assignment(token)
+            elif "at position" in token.value:
+                self._handle_array_position_access(token)
             else:
                 self._handle_assignment(token)
 
-    def _handle_array_assignment(self, token):
-        array_name, index = token.value.split("[")
-        index = int(index.rstrip("]"))
-        index = (index + 2) // 2  # Adjust index according to -2, 0, 2, 4, ...
+    def _handle_array_position_access(self, token):
+        array_name, index_str = token.value.split(" at position ")
+        index = int(index_str.strip())
+        adjusted_index = (index + 2) // 2  # Adjust index according to -2, 0, 2, 4, ...
 
-        if self.tokens and self.tokens[0].type == "OPERATOR" and self.tokens[0].value == "=":
-            self.tokens.pop(0)
-            if self.tokens:
-                value_token = self.tokens.pop(0)
-                if array_name not in self.variables:
-                    self.variables[array_name] = []
-                while len(self.variables[array_name]) <= index:
-                    self.variables[array_name].append(None)
-                if value_token.type == "NUMBER":
-                    self.variables[array_name][index] = value_token.value
-                elif value_token.type == "STRING":
-                    self.variables[array_name][index] = value_token.value.strip("'\"")
-                elif value_token.type == "IDENTIFIER":
-                    if value_token.value in self.variables:
-                        self.variables[array_name][index] = self.variables[value_token.value]
-                    else:
-                        self._print_warning(f"Variable '{value_token.value}' is not initialized.", array_name)
+        if array_name in self.variables and adjusted_index < len(self.variables[array_name]):
+            value = self.variables[array_name][adjusted_index]
+            if value is not None:
+                self.variables["my_array_value"] = value  # Store the value in my_array_value
+            else:
+                self._print_error(f"Error: Array '{array_name}' at position {index} is not initialized.", array_name)
+        else:
+            self._print_error(f"Error: Array '{array_name}' does not have a valid position {index}.", array_name)
 
     def _handle_inevitable_or_ironman(self):
         if self.tokens and self.tokens[0].value == "am":
@@ -98,18 +89,18 @@ class Interpreter:
                         result = result.replace(word, "")
                     if result.strip() and result not in self.erased_values:
                         print(result.strip())
-                elif "[" in value_token.value and "]" in value_token.value:
-                    array_name, index = value_token.value.split("[")
-                    index = int(index.rstrip("]"))
-                    index = (index + 2) // 2
-                    if array_name in self.variables and 0 <= index < len(self.variables[array_name]):
-                        result = self.variables[array_name][index]
+                elif "at position" in value_token.value:
+                    array_name, index_str = value_token.value.split(" at position ")
+                    index = int(index_str.strip())
+                    adjusted_index = (index + 2) // 2
+                    if array_name in self.variables and adjusted_index < len(self.variables[array_name]):
+                        result = self.variables[array_name][adjusted_index]
                         if result is not None:
                             print(result)
                         else:
-                            self._print_warning(f"Array element at index {index * 2 - 2} is not initialized.", array_name)
+                            self._print_error(f"Error: Array '{array_name}' at position {index} is not initialized.", array_name)
                     else:
-                        self._print_warning(f"Array '{array_name}' or index {index * 2 - 2} does not exist.", array_name)
+                        self._print_error(f"Error: Array '{array_name}' does not have a valid position {index}.", array_name)
                 else:
                     self._print_warning(f"Variable '{value_token.value}' is not initialized.", value_token.value)
 
