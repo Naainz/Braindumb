@@ -27,6 +27,10 @@ class Interpreter:
                 self._handle_print()
             elif token.value == "red":
                 self._handle_red_variable()
+            elif token.value == "green":
+                self._handle_green_variable()
+            elif token.value == "blue":
+                self._handle_blue_variable()
             else:
                 self._handle_assignment(token)
 
@@ -92,6 +96,50 @@ class Interpreter:
                             multiplier_token = self.tokens.pop(0)
                             if multiplier_token.type == "NUMBER":
                                 self.variables[var_token.value] = self.variables[value_token.value] * multiplier_token.value
+
+    def _handle_green_variable(self):
+        if self.tokens:
+            var_token = self.tokens.pop(0)
+            if var_token.type == "IDENTIFIER" and self.tokens:
+                equals_token = self.tokens.pop(0)
+                if equals_token.type == "OPERATOR" and equals_token.value == "=":
+                    value_token = self.tokens.pop(0)
+                    if value_token.type == "NUMBER":
+                        value = value_token.value
+                        if value % 2 != 0:  # Make sure it's even
+                            value -= 1
+                        self.variables[var_token.value] = value
+                    elif value_token.type == "IDENTIFIER":
+                        if self.tokens and self.tokens[0].type == "OPERATOR" and self.tokens[0].value == "*":
+                            self.tokens.pop(0)
+                            multiplier_token = self.tokens.pop(0)
+                            if multiplier_token.type == "NUMBER":
+                                value = self.variables[value_token.value] * multiplier_token.value
+                                if value % 2 != 0:  # Make sure it's even
+                                    value -= 1
+                                self.variables[var_token.value] = value
+
+    def _handle_blue_variable(self):
+        if self.tokens:
+            var_token = self.tokens.pop(0)
+            if var_token.type == "IDENTIFIER" and self.tokens:
+                equals_token = self.tokens.pop(0)
+                if equals_token.type == "OPERATOR" and equals_token.value == "=":
+                    value_token = self.tokens.pop(0)
+                    if value_token.type == "STRING":
+                        value = value_token.value.strip("'\"")
+                        if not any(vowel in value.lower() for vowel in "aeiou"):
+                            value += "balls"  # Punishment for no vowels
+                        self.variables[var_token.value] = value
+                    elif value_token.type == "IDENTIFIER":
+                        if self.tokens and self.tokens[0].type == "OPERATOR" and self.tokens[0].value == "*":
+                            self.tokens.pop(0)
+                            multiplier_token = self.tokens.pop(0)
+                            if multiplier_token.type == "NUMBER":
+                                value = self.variables[value_token.value] * multiplier_token.value
+                                if not any(vowel in str(value).lower() for vowel in "aeiou"):
+                                    value = str(value) + "balls"  # Punishment for no vowels
+                                self.variables[var_token.value] = value
 
     def _handle_assignment(self, token):
         var_name = token.value

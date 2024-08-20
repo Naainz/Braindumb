@@ -1,3 +1,0 @@
-red input = 4
-red result = input * 10!!
-!print! result

@@ -1,0 +1,7 @@
+green number = 7 ### 6
+blue text = 'bcdfghjklmnpqrstvwxyz' ### bcdfghjklmnpqrstvwxyzballs
+red input = 4 ### 5
+
+!print! number 
+!print! text
+!print! input
