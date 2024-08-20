@@ -70,7 +70,6 @@ ln -s $(pwd)/bd_interpreter.py /usr/local/bin/bd
 
 - **Large Numbers**: Numbers greater than 999 must be spelled out (e.g., `1001` should be written as `one thousand one`).
 
-```plaintext
 ## Example Usage
 
 ```plaintext
