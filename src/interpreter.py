@@ -10,6 +10,7 @@ class Interpreter:
         self.variables = {}
         self.erased_values = set()
         self.restored_values = set()
+        self.poop_emoji_active = False
 
     def run(self):
         while self.tokens:
@@ -22,20 +23,39 @@ class Interpreter:
         token = self.tokens.pop(0)
 
         if token.type == "IDENTIFIER":
-            if token.value == "i":
-                self._handle_inevitable_or_ironman()
-            elif token.value == "print!":
-                self._handle_print()
-            elif token.value == "red":
-                self._handle_red_variable()
-            elif token.value == "green":
-                self._handle_green_variable()
-            elif token.value == "blue":
-                self._handle_blue_variable()
-            elif "at position" in token.value:
-                self._handle_array_position_access(token)
-            else:
-                self._handle_assignment(token)
+            self._handle_identifier(token)
+        elif token.type == "EMOJI":
+            self._handle_emoji(token)
+
+    def _handle_identifier(self, token):
+        if self.poop_emoji_active:
+            self._apply_poop_logic(token.value)
+
+        if token.value == "i":
+            self._handle_inevitable_or_ironman()
+        elif token.value == "print!":
+            self._handle_print()
+        elif token.value == "red":
+            self._handle_red_variable()
+        elif token.value == "green":
+            self._handle_green_variable()
+        elif token.value == "blue":
+            self._handle_blue_variable()
+        elif "at position" in token.value:
+            self._handle_array_position_access(token)
+        else:
+            self._handle_assignment(token)
+
+    def _handle_emoji(self, token):
+        if token.value == "💩":
+            self.poop_emoji_active = True
+
+    def _apply_poop_logic(self, var_name):
+        if var_name in self.variables and isinstance(self.variables[var_name], int):
+            value = self.variables[var_name]
+            if value % 3 == 0:
+                self.variables[var_name] = value * 2
+        self.poop_emoji_active = False
 
     def _handle_array_position_access(self, token):
         array_name, index_str = token.value.split(" at position ")
