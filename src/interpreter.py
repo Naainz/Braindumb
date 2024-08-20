@@ -74,7 +74,7 @@ class Interpreter:
                     if result.strip() and result not in self.erased_values:
                         print(result.strip())
                 else:
-                    self._print_warning(f"Variable '{value_token.value}' is not initialized.")
+                    self._print_warning(f"Variable '{value_token.value}' is not initialized.", value_token.value)
 
     def _handle_red_variable(self):
         if self.tokens:
@@ -96,7 +96,7 @@ class Interpreter:
             var_token = self.tokens.pop(0)
             if var_token.type == "IDENTIFIER" and self.tokens:
                 equals_token = self.tokens.pop(0)
-                if equals_token.type == "OPERATOR" and equals_equals_token.value == "=":
+                if equals_token.type == "OPERATOR" and equals_token.value == "=":
                     value_token = self.tokens.pop(0)
                     if value_token.type == "NUMBER":
                         value = self._apply_magic_number_logic(value_token.value)
@@ -131,7 +131,7 @@ class Interpreter:
                     value = value_token.value
                     if value > 999:
                         spelled_value = num2words(value).replace("-", " ").replace(",", "")
-                        self._print_error(f"Error: Number {value} must be spelled out as '{spelled_value}'.")
+                        self._print_error(f"Error: Number {value} must be spelled out as '{spelled_value}'.", var_name)
                         return
                     value = self._apply_magic_number_logic(value)
                     if self.tokens and self.tokens[0].type == "OPERATOR":
@@ -144,7 +144,7 @@ class Interpreter:
                         elif operator.value in ["+", "-", "*", "/"]:
                             second_operand = self.tokens.pop(0)
                             if operator.value == "/" and second_operand.value == 0:
-                                self._print_warning("Division by zero is not allowed.")
+                                self._print_warning("Division by zero is not allowed.", var_name)
                                 return
                             if second_operand.type == "NUMBER":
                                 value = self._apply_operation(value, second_operand.value, operator.value)
@@ -161,7 +161,7 @@ class Interpreter:
                         self.variables[var_name] = value
                 elif value_token.type == "IDENTIFIER":
                     if value_token.value not in self.variables:
-                        self._print_warning(f"Variable '{value_token.value}' is not initialized.")
+                        self._print_warning(f"Variable '{value_token.value}' is not initialized.", var_name)
                     else:
                         self.variables[var_name] = self.variables[value_token.value]
 
@@ -216,13 +216,23 @@ class Interpreter:
                 self.variables[key] = -self.variables[key]
                 break
 
-    def _print_error(self, message):
+    def _print_error(self, message, var_name):
         penguin_fact = self._get_random_penguin_fact()
-        print(f"{message} Here's a penguin fact: {penguin_fact}")
+        error_message = f"{message} Here's a penguin fact: {penguin_fact}"
+        self._output_message(error_message, var_name)
 
-    def _print_warning(self, message):
+    def _print_warning(self, message, var_name=None):
         motivational_quote = self._get_random_motivational_quote()
-        print(f"Motivational Quote: {motivational_quote}")
+        warning_message = f"Motivational Quote: {motivational_quote}"
+        self._output_message(warning_message, var_name)
+
+    def _output_message(self, message, var_name):
+        if var_name and self._is_palindrome(var_name):
+            message = message[::-1]
+        print(message)
+
+    def _is_palindrome(self, word):
+        return word == word[::-1]
 
     def _get_random_penguin_fact(self):
         facts = [

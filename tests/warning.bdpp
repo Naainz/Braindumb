@@ -1,6 +1,8 @@
-x = balls + 10  # 'balls' is not initialized, should trigger a warning
+non_palindrome = balls + balls # 'balls' is not initialized, should trigger a warning
 
-z = 100 / 0  # Division by zero, should trigger an error
+tacocat = balls + 10  # 'balls' is not initialized, should trigger a warning
+
+racecar = 100 / 0  # Division by zero, should trigger an error
 
 !print! uninitialized_var  # uninitialized_var is not initialized, should trigger a warning
 
