@@ -20,45 +20,49 @@ class Lexer:
 
             if char.isspace():
                 self.current_position += 1
-            elif self.code[self.current_position:self.current_position + 3] == '...':
-                self._skip_comment()
+            elif char in ["'", '"']:  # Detect strings enclosed in quotes
+                self.tokens.append(self._tokenize_string())
             elif char.isdigit():
                 self.tokens.append(self._tokenize_number())
-            elif char.isalpha() or char in ["'", '"', "!", "?"]:
-                self.tokens.append(self._tokenize_identifier_or_string())
+            elif char.isalpha():
+                self.tokens.append(self._tokenize_identifier())
             elif char in "=+*/-":
                 self.tokens.append(Token("OPERATOR", char))
                 self.current_position += 1
-            elif char == '(' or char == ')':
-                self.current_position += 1
+            elif char in "!":
+                self.tokens.append(Token("EMOTION", char + self._tokenize_emotion()))
             else:
                 self.current_position += 1
 
         return self.tokens
 
-    def _skip_comment(self):
-        """Skip over comments starting with '...' and ending with '###'."""
-        end_comment = self.code.find('###', self.current_position)
-        if end_comment == -1:
-            raise SyntaxError("Comment not terminated with '###'")
-        self.current_position = end_comment + 3
+    def _tokenize_string(self):
+        quote_type = self.code[self.current_position]
+        self.current_position += 1
+        string_value = ''
+        while self.current_position < len(self.code) and self.code[self.current_position] != quote_type:
+            string_value += self.code[self.current_position]
+            self.current_position += 1
+        self.current_position += 1  # Skip closing quote
+        return Token("STRING", string_value)
 
     def _tokenize_number(self):
-        number = ''
+        number_value = ''
         while self.current_position < len(self.code) and self.code[self.current_position].isdigit():
-            number += self.code[self.current_position]
+            number_value += self.code[self.current_position]
             self.current_position += 1
-        return Token("NUMBER", int(number))
+        return Token("NUMBER", int(number_value))
 
-    def _tokenize_identifier_or_string(self):
-        id_str = ''
-        while self.current_position < len(self.code) and (
-            self.code[self.current_position].isalnum() or self.code[self.current_position] in ["'", '"', "!", "?"]
-        ):
-            id_str += self.code[self.current_position]
+    def _tokenize_identifier(self):
+        identifier_value = ''
+        while self.current_position < len(self.code) and self.code[self.current_position].isalnum():
+            identifier_value += self.code[self.current_position]
             self.current_position += 1
-        if id_str[0] in ["'", '"']:
-            return Token("STRING", id_str)
-        elif "!" in id_str or "?" in id_str:
-            return Token("EMOTION", id_str)
-        return Token("IDENTIFIER", id_str)
+        return Token("IDENTIFIER", identifier_value)
+
+    def _tokenize_emotion(self):
+        emotion_value = ''
+        while self.current_position < len(self.code) and self.code[self.current_position].isalpha():
+            emotion_value += self.code[self.current_position]
+            self.current_position += 1
+        return emotion_value
