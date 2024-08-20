@@ -1,0 +1,2 @@
+num2words==0.5.13
+word2number==1.1
