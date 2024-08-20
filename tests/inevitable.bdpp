@@ -3,5 +3,5 @@ i am inevitable 9
 text = 'text word text word word text text word word'
 number = 91
 
-!print! text
-!print! number
+!print! text ### word  word word   word word
+!print! number ### 1

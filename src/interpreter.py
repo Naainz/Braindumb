@@ -40,20 +40,16 @@ class Interpreter:
                         stripped_value = value_token.value.strip("'\"")
                         self.erased_values.add(stripped_value)
                     elif value_token.type == "NUMBER":
-                        self.erased_values.add(value_token.value)
+                        self.erased_values.add(str(value_token.value))  # Store as string for comparison
 
     def _handle_print(self):
         if self.tokens:
             value_token = self.tokens.pop(0)
             if value_token.type == "IDENTIFIER" and value_token.value in self.variables:
-                result = self.variables[value_token.value]
-                if isinstance(result, str):
-                    for word in self.erased_values:
-                        result = result.replace(f" {word} ", " ").replace(f" {word}", "").replace(f"{word} ", "")
-                    print(result.strip())
-                else:
-                    if result not in self.erased_values:
-                        print(result)
+                result = str(self.variables[value_token.value])
+                for word in self.erased_values:
+                    result = result.replace(word, "")
+                print(result.strip())
 
     def _handle_red_variable(self):
         if self.tokens:
@@ -81,21 +77,32 @@ class Interpreter:
             if self.tokens:
                 value_token = self.tokens.pop(0)
                 if value_token.type == "NUMBER":
-                    if value_token.value not in self.erased_values:
-                        self.variables[var_name] = value_token.value
+                    value_str = str(value_token.value)
+                    for word in self.erased_values:
+                        value_str = value_str.replace(word, "")
+                    if value_str:
+                        self.variables[var_name] = int(value_str)
                 elif value_token.type == "IDENTIFIER":
                     if self.tokens and self.tokens[0].type == "OPERATOR" and self.tokens[0].value == "*":
                         self.tokens.pop(0)
                         multiplier_token = self.tokens.pop(0)
                         if multiplier_token.type == "NUMBER":
                             result = self.variables[value_token.value] * multiplier_token.value
-                            if result not in self.erased_values:
-                                self.variables[var_name] = result
+                            result_str = str(result)
+                            for word in self.erased_values:
+                                result_str = result_str.replace(word, "")
+                            if result_str:
+                                self.variables[var_name] = int(result_str)
                     else:
                         value = self.variables.get(value_token.value, 0)
-                        if value not in self.erased_values:
-                            self.variables[var_name] = value
+                        value_str = str(value)
+                        for word in self.erased_values:
+                            value_str = value_str.replace(word, "")
+                        if value_str:
+                            self.variables[var_name] = int(value_str)
                 elif value_token.type == "STRING":
                     value = value_token.value.strip("'\"")
-                    if value not in self.erased_values:
+                    for word in self.erased_values:
+                        value = value.replace(word, "")
+                    if value:
                         self.variables[var_name] = value
