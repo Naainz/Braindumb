@@ -158,44 +158,22 @@ class Interpreter:
 
     def _handle_assignment(self, token):
         var_name = token.value
-        if self.tokens and self.tokens[0].type == "OPERATOR" and self.tokens[0].value == "=":
-            self.tokens.pop(0)
-            if self.tokens:
-                value_token = self.tokens.pop(0)
-                if value_token.type == "NUMBER":
-                    value = value_token.value
-                    if value == 7:
-                        value = self._get_random_prime_below_100()
-                    elif value == 0:
-                        self._invert_nearest_non_zero()
-                    elif value == 42:
-                        self.variables[var_name] = "The answer to life, the universe, and everything."
-                        return
-                    value_str = str(value)
-                    for word in self.erased_values:
-                        value_str = value_str.replace(word, "")
-                    if value_str:
-                        self.variables[var_name] = int(value_str)
-                elif value_token.type == "IDENTIFIER":
-                    if self.tokens and self.tokens[0].type == "OPERATOR" and self.tokens[0].value == "*":
-                        self.tokens.pop(0)
-                        multiplier_token = self.tokens.pop(0)
-                        if multiplier_token.type == "NUMBER":
-                            value = self.variables[value_token.value] * multiplier_token.value
-                            if value == 7:
-                                value = self._get_random_prime_below_100()
-                            elif value == 0:
-                                self._invert_nearest_non_zero()
-                            elif value == 42:
-                                self.variables[var_name] = "The answer to life, the universe, and everything."
-                                return
-                            result_str = str(value)
-                            for word in self.erased_values:
-                                result_str = result_str.replace(word, "")
-                            if result_str:
-                                self.variables[var_name] = int(result_str)
-                    else:
-                        value = self.variables.get(value_token.value, 0)
+        if self.tokens and (self.tokens[0].type == "OPERATOR" and self.tokens[0].value == "=" or self.tokens[0].value == "?="):
+            op = self.tokens.pop(0)
+            if op.value == "?=":
+                if random.choice([True, False]):
+                    value_token = self.tokens.pop(0)
+                    if value_token.type == "NUMBER" or value_token.type == "STRING":
+                        self.variables[var_name] = value_token.value
+            else:
+                if self.tokens:
+                    value_token = self.tokens.pop(0)
+                    if value_token.type == "NUMBER":
+                        if self.tokens and self.tokens[0].type == "OPERATOR" and self.tokens[0].value == "?":
+                            self.tokens.pop(0)
+                            value = self._apply_random_operation(1, value_token.value)
+                        else:
+                            value = value_token.value
                         if value == 7:
                             value = self._get_random_prime_below_100()
                         elif value == 0:
@@ -208,12 +186,55 @@ class Interpreter:
                             value_str = value_str.replace(word, "")
                         if value_str:
                             self.variables[var_name] = int(value_str)
-                elif value_token.type == "STRING":
-                    value = value_token.value.strip("'\"")
-                    for word in self.erased_values:
-                        value = value.replace(word, "")
-                    if value:
-                        self.variables[var_name] = value
+                    elif value_token.type == "IDENTIFIER":
+                        if self.tokens and self.tokens[0].type == "OPERATOR" and self.tokens[0].value == "*":
+                            self.tokens.pop(0)
+                            multiplier_token = self.tokens.pop(0)
+                            if multiplier_token.type == "NUMBER":
+                                value = self.variables[value_token.value] * multiplier_token.value
+                                if value == 7:
+                                    value = self._get_random_prime_below_100()
+                                elif value == 0:
+                                    self._invert_nearest_non_zero()
+                                elif value == 42:
+                                    self.variables[var_name] = "The answer to life, the universe, and everything."
+                                    return
+                                result_str = str(value)
+                                for word in self.erased_values:
+                                    result_str = result_str.replace(word, "")
+                                if result_str:
+                                    self.variables[var_name] = int(result_str)
+                        else:
+                            value = self.variables.get(value_token.value, 0)
+                            if value == 7:
+                                value = self._get_random_prime_below_100()
+                            elif value == 0:
+                                self._invert_nearest_non_zero()
+                            elif value == 42:
+                                self.variables[var_name] = "The answer to life, the universe, and everything."
+                                return
+                            value_str = str(value)
+                            for word in self.erased_values:
+                                value_str = value_str.replace(word, "")
+                            if value_str:
+                                self.variables[var_name] = int(value_str)
+                    elif value_token.type == "STRING":
+                        value = value_token.value.strip("'\"")
+                        for word in self.erased_values:
+                            value = value.replace(word, "")
+                        if value:
+                            self.variables[var_name] = value
+
+    def _apply_random_operation(self, base_value, operand):
+        operation = random.choice(["+", "-", "*", "/"])
+        if operation == "+":
+            return base_value + operand
+        elif operation == "-":
+            return base_value - operand
+        elif operation == "*":
+            return base_value * operand
+        elif operation == "/":
+            return base_value // operand if operand != 0 else base_value
 
     def _get_random_prime_below_100(self):
         primes = [2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37, 41, 43, 47, 53, 59, 61, 67, 71, 73, 79, 83, 89, 97]
