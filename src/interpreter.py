@@ -124,13 +124,15 @@ class Interpreter:
                 value_token = self.tokens.pop(0)
                 if value_token.type == "NUMBER":
                     value = self._apply_magic_number_logic(value_token.value)
-                    if self.tokens and self.tokens[0].type == "OPERATOR" and self.tokens[0].value in ["+", "-", "*", "/", "?"]:
+                    if self.tokens and self.tokens[0].type == "OPERATOR":
                         operator = self.tokens.pop(0)
-                        second_operand = self.tokens.pop(0)
-                        if second_operand.type == "NUMBER":
-                            if operator.value == "?":
+                        if operator.value == "?":
+                            second_operand = self.tokens.pop(0)
+                            if second_operand.type == "NUMBER":
                                 value = self._apply_random_operation(value, second_operand.value)
-                            else:
+                        elif operator.value in ["+", "-", "*", "/"]:
+                            second_operand = self.tokens.pop(0)
+                            if second_operand.type == "NUMBER":
                                 value = self._apply_operation(value, second_operand.value, operator.value)
                     self.variables[var_name] = value
                 elif value_token.type == "IDENTIFIER":
@@ -161,6 +163,10 @@ class Interpreter:
         elif operator == "/":
             return left_operand // right_operand if right_operand != 0 else left_operand
 
+    def _apply_random_operation(self, left_operand, right_operand):
+        operation = random.choice(["+", "-", "*", "/"])
+        return self._apply_operation(left_operand, right_operand, operation)
+
     def _apply_magic_number_logic(self, value):
         if value == 7:
             return self._get_random_prime_below_100()
@@ -169,10 +175,6 @@ class Interpreter:
         elif value == 42:
             return "The answer to life, the universe, and everything."
         return value
-
-    def _apply_random_operation(self, left_operand, right_operand):
-        operation = random.choice(["+", "-", "*", "/"])
-        return self._apply_operation(left_operand, right_operand, operation)
 
     def _get_random_prime_below_100(self):
         primes = [2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37, 41, 43, 47, 53, 59, 61, 67, 71, 73, 79, 83, 89, 97]
