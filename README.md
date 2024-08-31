@@ -91,4 +91,4 @@ text = "bcdfghjklmnpqrstvwxyz"
 
 ## License
 
-This project was licensed under the [MIT License](LICENSE).
+This project was licensed under the [GNU GPL v3.0 License](LICENSE).
